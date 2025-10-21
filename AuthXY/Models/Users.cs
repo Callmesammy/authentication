@@ -1,6 +1,7 @@
 
 
 using Microsoft.AspNetCore.Identity;
+
 namespace AuthXY.Models;
 
 public class User : IdentityUser
