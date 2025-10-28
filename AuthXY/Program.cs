@@ -1,4 +1,3 @@
-
 using AuthXY.Endpoints;
 using AuthXY.Models;
 using AuthXY.Service;
@@ -33,15 +32,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(
+                    builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT key is missing")
+                )
+            )
         };
     });
-// 🔹 Services
+
+// ✅ Add Authorization (this was missing)
+builder.Services.AddAuthorization();
+
+// 🔹 Custom Services
 builder.Services.AddScoped<TokenService>();
 
 var app = builder.Build();
 
 // 🔹 Middlewares
+app.UseHttpsRedirection();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
