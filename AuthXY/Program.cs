@@ -57,4 +57,7 @@ app.UseAuthorization();
 // 🔹 Endpoints
 app.MapAuthEndpoints();
 
+
+app.MapGet("/", () => Results.Ok("✅ AuthX API is running..."));
+
 app.Run();
