@@ -6,7 +6,7 @@ using System.Text;
 using AuthXY.Models;
 using Microsoft.IdentityModel.Tokens;
 
-namespace AuthXy.Service;
+namespace AuthXY.Service;
 
 public class TokenService(IConfiguration config)
 {

@@ -1,3 +1,5 @@
+
+using AuthXY.Service;
 using AuthXY.Dtos;
 using AuthXY.Models;
 using Microsoft.AspNetCore.Identity;
@@ -8,12 +10,11 @@ public static class AuthEndpoints
 {
     public static void MapAuthEndpoints(this IEndpointRouteBuilder routes)
     {
-        // REGISTER 
-        // here is for the registrer segment
+        // Register
         routes.MapPost("/api/register", async (
             RegisterDto dto,
-            UserManager < User > UserManager,
-            RoleManager<IdentityRole> RoleManager) =>
+            UserManager<User> userManager,
+            RoleManager<IdentityRole> roleManager) =>
         {
             var user = new User
             {
@@ -22,22 +23,30 @@ public static class AuthEndpoints
                 UserName = dto.Email
             };
 
-            var result = await UserManager.CreateAsync(user, dto.Password);
+            var result = await userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
                 return Results.BadRequest(result.Errors);
 
-            if (!await RoleManager.RoleExistsAsync("user"))
-                await RoleManager.CreateAsync(new IdentityRole("user"));
+            if (!await roleManager.RoleExistsAsync("user"))
+                await roleManager.CreateAsync(new IdentityRole("user"));
 
-            await UserManager.AddToRoleAsync(user, "user");
-            return Results.Ok(new { Message = "User Registrered Successfully" });
-   
-   
-        ??
-   
-        }
+            await userManager.AddToRoleAsync(user, "user");
+            return Results.Ok(new { Message = "User registered successfully" });
+        });
 
+        // Login
+        routes.MapPost("/api/login", async (
+            LoginDto dto,
+            UserManager<User> userManager,
+            TokenService tokenService) =>
+        {
+            var user = await userManager.FindByEmailAsync(dto.Fullname);
+            if (user is null || !await userManager.CheckPasswordAsync(user, dto.Password))
+                return Results.Unauthorized();
 
-        ))
+            var roles = await userManager.GetRolesAsync(user);
+            var token = tokenService.CreateToken(user, roles);
+            return Results.Ok(new { Token = token });
+        });
     }
 }
